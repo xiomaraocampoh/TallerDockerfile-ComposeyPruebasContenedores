@@ -38,10 +38,12 @@ uv sync
 ## 1. Tests unitarios (pytest / TDD)
 
 ```powershell
-uv run python -m pytest test/ -v
+uv run python -m pytest --cov=src --cov-report=term --cov-fail-under=80 test/ -v
 ```
 
 Resultado esperado: **7 passed**
+
+Cobertura minima: **>= 80%** sobre `src/`
 
 Ciclo TDD usado: commits con `test:` (red), `feat:` (green), `refactor:` (limpieza).
 

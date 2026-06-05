@@ -25,23 +25,18 @@ jobs:
         run: uv sync
 
       - name: Tests unitarios
-        run: uv run python -m pytest test/ -v
+        run: uv run python -m pytest --cov=src --cov-report=term --cov-fail-under=80 test/ -v
 
       - name: Tests BDD
         run: uv run behave
 
 
-      - name: Iniciar API
-        run: uv run uvicorn src.api:app --host 127.0.0.1 --port 8000 &
-
-      - name: Esperar API
+      - name: API y pruebas de carga
         run: |
+          uv run uvicorn src.api:app --host 127.0.0.1 --port 8000 &
           for i in $(seq 1 30); do
-            curl -sf http://127.0.0.1:8000/health && exit 0
+            curl -sf http://127.0.0.1:8000/health && break
             sleep 1
           done
-          echo "La API no respondio a tiempo"
-          exit 1
-
-      - name: Locust con 30 usuarios
-        run: uv run locust -f locustfile.py --headless -u 30 -r 10 -t 20s --host http://127.0.0.1:8000
+          curl -sf http://127.0.0.1:8000/health || { echo "La API no respondio a tiempo"; exit 1; }
+          uv run locust -f locustfile.py --headless -u 30 -r 10 -t 20s --host http://127.0.0.1:8000
