@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Instalar dependencias
+        run: uv sync
+
+      - name: Tests unitarios
+        run: uv run python -m pytest test/ -v
+
+      - name: Tests BDD
+        run: uv run behave
+
+
+      - name: Iniciar API
+        run: uv run uvicorn src.api:app --host 127.0.0.1 --port 8000 &
+
+      - name: Esperar API
+        run: |
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:8000/health && exit 0
+            sleep 1
+          done
+          echo "La API no respondio a tiempo"
+          exit 1
+
+      - name: Locust con 30 usuarios
+        run: uv run locust -f locustfile.py --headless -u 30 -r 10 -t 20s --host http://127.0.0.1:8000
