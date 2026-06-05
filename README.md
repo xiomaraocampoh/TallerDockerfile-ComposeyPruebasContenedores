@@ -99,7 +99,7 @@ Al final debe aparecer: `OK: P95=XXms dentro del limite de 300ms`
 
 ## 5. Pipeline CI (GitHub Actions)
 
-En **cada push** corre: pytest + behave + bandit + Locust con 30 usuarios.
+En **cada push** corre: pytest + behave +  Locust con 30 usuarios.
 
 
 ## Estructura
