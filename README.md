@@ -31,14 +31,16 @@ Casos premium (bono base + 5%):
 ## Instalacion
 
 ```powershell
-cd D:\recargaya
+cd D:\Parcial-2corte-Pruebas
+python -m pip install --upgrade pip
+python -m pip install uv
 uv sync
 ```
 
 ## 1. Tests unitarios (pytest / TDD)
 
 ```powershell
-uv run python -m pytest --cov=src --cov-report=term --cov-fail-under=80 test/ -v
+uv run pytest -v
 ```
 
 Resultado esperado: **7 passed**
@@ -101,8 +103,11 @@ Al final debe aparecer: `OK: P95=XXms dentro del limite de 300ms`
 
 ## 5. Pipeline CI (GitHub Actions)
 
-En **cada push** corre: pytest + behave +  Locust con 30 usuarios.
+En **cada push** corre:
 
+- `uv run pytest -v`
+- `uv run behave`
+- `uv run locust -f locustfile.py --headless -u 30 -r 10 -t 20s --host http://127.0.0.1:8000`
 
 ## Estructura
 
