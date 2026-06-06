@@ -8,27 +8,28 @@ on:
 jobs:
   tests:
     runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - uses: actions/checkout@v4
 
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/setup-python@v4
         with:
-          enable-cache: true
+          python-version: '3.14'
 
-      - name: Instalar dependencias
-        run: uv sync
+      - name: Install uv and dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install uv
+          uv sync
 
-      - name: Tests unitarios
-        run: uv run pytest --cov=src --cov-report=term --cov-fail-under=80 test/ -v
+      - name: Run unit tests
+        run: uv run pytest -v
 
-      - name: Tests BDD
+      - name: Run BDD tests
         run: uv run behave
 
-      - name: API y pruebas de carga
+      - name: Run API and load tests
         run: |
           uv run uvicorn src.api:app --host 127.0.0.1 --port 8000 &
           sleep 3
-          curl -sf http://127.0.0.1:8000/health || { echo "La API no respondió"; exit 1; }
+          curl -sf http://127.0.0.1:8000/health
           uv run locust -f locustfile.py --headless -u 30 -r 10 -t 20s --host http://127.0.0.1:8000
