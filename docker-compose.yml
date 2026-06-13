@@ -1,0 +1,40 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16
+    container_name: recargaya_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: recarga
+      POSTGRES_PASSWORD: recarga123
+      POSTGRES_DB: recargayd
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U recarga -d recargayd"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5432:5432"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: recargaya_app
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg://recarga:recarga123@db:5432/recargayd
+      PORT: "8000"
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./:/app
+    command: ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]
+
+volumes:
+  db_data:

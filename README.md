@@ -1,127 +1,150 @@
-## Tabla de casos de prueba (campo monto)
+# Taller Docker Compose - Basado en el parcial del segundo corte
 
-Particion de equivalencia y valores limite sobre el **monto**:
+Este documento explica cómo ejecutar el proyecto, ejecutar pruebas, usar Docker y Docker Compose
 
-| Grupo | Rango | Caso limite | Resultado esperado |
-|-------|-------|-------------|-------------------|
-| Invalido bajo | < 1000 | **999** | Rechazado |
-| Valido sin bono | 1000 - 9999 | **1000** (minimo) | Aceptado, 0% bono |
-| Bono 10% | 10000 - 29999 | **10000** | Aceptado, 10% bono |
-| Bono 25% | 30000 - 50000 | **30000** | Aceptado, 25% bono |
-| Invalido alto | > 50000 | **50001** | Rechazado |
+## 1. Qué contiene este proyecto
 
-Casos premium (bono base + 5%):
+- `src/api.py`: FastAPI con los siguientes endpoints:
+  - `GET /health` - verifica que el servicio está vivo.
+  - `GET /recarga` - calcula el bono de una recarga según monto y si es premium.
+  - `POST /recarga` - hace lo mismo usando payload JSON.
+  - `POST /recargas` - crea un registro de recarga en la base de datos.
+  - `GET /recargas` - lista las recargas almacenadas.
+- `src/db.py`: configuración de SQLAlchemy.
+- `src/models.py`: modelo `RecargaRecord` para persistencia.
+- `src/recarga.py`: lógica de negocio de cálculo de bonos.
+- `Dockerfile`: construye la imagen de la aplicación.
+- `docker-compose.yml`: levanta la app y PostgreSQL.
+- `requirements.txt`: dependencias Python.
+- `test/test_api.py`: pruebas unitarias para endpoints y persistencia.
 
-| Monto | Premium | Bono total |
-|-------|---------|------------|
-| 10000 | Si | 15% |
-| 30000 | Si | 30% |
-| 50000 | Si | 30% |
+## 2. Preparar el entorno local
+
+1. Abrir terminal en `d:\Parcial-2corte-Pruebas`.
+2. Instalar dependencias:
+
+```powershell
+python -m pip install -r requirements.txt
+```
+
+## 3. Ejecutar pruebas localmente
+
+```powershell
+python -m pytest -q
+```
+
+Si todas las pruebas pasan, el proyecto está correcto.
+
+## 4. Construir la imagen Docker
+
+```powershell
+docker build -t mi-app:v1 .
+```
+
+Verificar que la imagen exista:
+
+```powershell
+docker images
+```
+
+## 5. Levantar los servicios con Docker Compose
+
+```powershell
+docker compose up -d
+```
+
+Esto levanta:
+- `db`: PostgreSQL 16 con volumen persistente.
+- `app`: la aplicación FastAPI construida desde `Dockerfile`.
+
+## 6. Verificar que ambos servicios estén corriendo
+
+```powershell
+docker compose ps
+```
+
+Debe aparecer `recargaya_db` y `recargaya_app` con estado `running`.
+
+## 7. Probar que la aplicación responde
+
+Desde tu máquina:
+
+```powershell
+curl http://localhost:8000/health
+```
+
+O en PowerShell:
+
+```powershell
+Invoke-WebRequest http://localhost:8000/health | Select-Object -ExpandProperty Content
+```
+
+También puedes probar el endpoint de recarga:
+
+```powershell
+curl "http://localhost:8000/recarga?monto=10000&es_premium=false"
+```
+
+## 8. Ejecutar pruebas dentro del contenedor de la aplicación
+
+```powershell
+docker compose exec app python -m pytest -q
+```
+
+## 9. Ejecutar pruebas usando un contenedor temporal
+
+```powershell
+docker compose run --rm app python -m pytest -q
+```
+
+## 10. Modificar la aplicación y reconstruir solo el servicio de app
+
+Si agregas un endpoint o cambias la aplicación, usa:
+
+```powershell
+docker compose up -d --build app
+```
+
+Luego vuelve a ejecutar las pruebas dentro del contenedor.
+
+## 11. Cómo cambiar el repositorio remoto Git
+
+Este proyecto actualmente usa el remoto:
+
+```text
+origin  https://github.com/xiomaraocampoh/Parcial-2corte-Pruebas.git
+```
+
+Para cambiarlo a uno nuevo, ejecuta:
+
+```powershell
+git remote set-url origin https://github.com/<tu-usuario>/<nuevo-repo>.git
+```
+
+Verifica el cambio con:
+
+```powershell
+git remote -v
+```
+
+Si quieres agregar un remoto adicional en lugar de reemplazar el existente:
+
+```powershell
+git remote add upstream https://github.com/<tu-usuario>/<nuevo-repo>.git
+```
+
+## 12. Notas importantes
+
+- En Docker Compose la aplicación recibe la variable `DATABASE_URL` para conectarse a PostgreSQL.
+- El servicio `db` tiene volumen persistente `db_data` para que los datos sobrevivan reinicios.
+- El proyecto fue adaptado a los requisitos del taller usando la base del parcial del segundo corte, con lógica de negocio libre y endpoints de creación/listado.
 
 ---
-## Reglas de negocio
 
-| Regla | Detalle |
-|-------|---------|
-| Rango valido | Monto entre **$1.000** y **$50.000**. Fuera de rango = rechazado |
-| Bono 10% | Recargas de **$10.000** o mas |
-| Bono 25% | Recargas de **$30.000** o mas (reemplaza el 10%) |
-| Premium | **+5%** adicional sobre el bono que ya tenga |
+### Resultado esperado
 
-## Instalacion
+- `docker compose ps` muestra ambos servicios.
+- Las pruebas dentro del contenedor pasan.
+- El nuevo endpoint `POST /recargas` y `GET /recargas` están presentes.
 
-```powershell
-cd D:\Parcial-2corte-Pruebas
-python -m pip install --upgrade pip
-python -m pip install uv
-uv sync
-```
-
-## 1. Tests unitarios (pytest / TDD)
-
-```powershell
-uv run pytest -v
-```
-
-Resultado esperado: **7 passed**
-
-Cobertura minima: **>= 80%** sobre `src/`
-
-Ciclo TDD usado: commits con `test:` (red), `feat:` (green), `refactor:` (limpieza).
-
----
-
-## 2. Tests BDD (behave / Gherkin)
-
-Escenarios en `features/recarga.feature` (incluye un **Scenario Outline**).
-
-```powershell
-uv run behave
-```
-
-Resultado esperado: **8 scenarios passed** (4 fijos + 4 del outline)
-
-
----
-
-## 3. API FastAPI
-
-Levantar servidor:
-
-```powershell
-uv run uvicorn src.api:app --host 127.0.0.1 --port 8000
-```
-
-Probar manualmente:
-
-```powershell
-curl "http://127.0.0.1:8000/recarga?monto=10000&es_premium=false"
-curl "http://127.0.0.1:8000/recarga?monto=999"
-```
-
-Documentacion interactiva: http://127.0.0.1:8000/docs
-
----
-
-## 4. Rendimiento (Locust, 30 usuarios, P95 < 300ms)
-
-Terminal 1 (API):
-
-```powershell
-uv run uvicorn src.api:app --host 127.0.0.1 --port 8000
-```
-
-Terminal 2 (Locust):
-
-```powershell
-uv run locust -f locustfile.py --headless -u 30 -r 10 -t 20s --host http://127.0.0.1:8000
-```
-
-Al final debe aparecer: `OK: P95=XXms dentro del limite de 300ms`
-
----
-
-## 5. Pipeline CI (GitHub Actions)
-
-En **cada push** corre:
-
-- `uv run pytest -v`
-- `uv run behave`
-- `uv run locust -f locustfile.py --headless -u 30 -r 10 -t 20s --host http://127.0.0.1:8000`
-
-## Estructura
-
-```
-recargaya/
-├── src/
-│   ├── recarga.py       # logica de negocio
-│   └── api.py           # FastAPI
-├── test/
-│   └── test_recarga.py
-├── features/
-│   ├── recarga.feature
-│   └── steps/
-│       └── recarga_steps.py
-├── locustfile.py
-└── .github/workflows/ci.yml
-```
+**Listo para entrega del taller Docker Compose.**

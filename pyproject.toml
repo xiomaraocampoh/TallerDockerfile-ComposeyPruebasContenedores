@@ -12,6 +12,8 @@ dependencies = [
     "pytest>=9.0.3",
     "pytest-bdd>=8.1.0",
     "pytest-cov>=7.1.0",
+    "sqlalchemy>=2.0",
+    "psycopg[binary]>=3.2",
     "uvicorn[standard]>=0.34.0",
 ]
 
