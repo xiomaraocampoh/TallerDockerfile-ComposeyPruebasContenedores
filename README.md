@@ -67,8 +67,6 @@ Debe aparecer `recargaya_db` y `recargaya_app` con estado `running`.
 
 ## 7. Probar que la aplicación responde
 
-¿
-
 en PowerShell:
 
 ```powershell
