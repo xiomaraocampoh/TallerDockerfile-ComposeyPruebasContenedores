@@ -91,15 +91,7 @@ docker compose exec app python -m pytest -q
 docker compose run --rm app python -m pytest -q
 ```
 
-## 10. Modificar la aplicación y reconstruir solo el servicio de app
-
-Si agregas un endpoint o cambias la aplicación, usa:
-
-```powershell
-docker compose up -d --build app
-```
-
-## 11. Notas importantes
+## 10. Notas importantes
 
 - En Docker Compose la aplicación recibe la variable `DATABASE_URL` para conectarse a PostgreSQL.
 - El servicio `db` tiene volumen persistente `db_data` para que los datos sobrevivan reinicios.
