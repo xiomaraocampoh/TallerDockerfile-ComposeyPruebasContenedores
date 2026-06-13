@@ -67,13 +67,9 @@ Debe aparecer `recargaya_db` y `recargaya_app` con estado `running`.
 
 ## 7. Probar que la aplicación responde
 
-Desde tu máquina:
+¿
 
-```powershell
-curl http://localhost:8000/health
-```
-
-O en PowerShell:
+en PowerShell:
 
 ```powershell
 Invoke-WebRequest http://localhost:8000/health | Select-Object -ExpandProperty Content
@@ -105,35 +101,7 @@ Si agregas un endpoint o cambias la aplicación, usa:
 docker compose up -d --build app
 ```
 
-Luego vuelve a ejecutar las pruebas dentro del contenedor.
-
-## 11. Cómo cambiar el repositorio remoto Git
-
-Este proyecto actualmente usa el remoto:
-
-```text
-origin  https://github.com/xiomaraocampoh/Parcial-2corte-Pruebas.git
-```
-
-Para cambiarlo a uno nuevo, ejecuta:
-
-```powershell
-git remote set-url origin https://github.com/<tu-usuario>/<nuevo-repo>.git
-```
-
-Verifica el cambio con:
-
-```powershell
-git remote -v
-```
-
-Si quieres agregar un remoto adicional en lugar de reemplazar el existente:
-
-```powershell
-git remote add upstream https://github.com/<tu-usuario>/<nuevo-repo>.git
-```
-
-## 12. Notas importantes
+## 11. Notas importantes
 
 - En Docker Compose la aplicación recibe la variable `DATABASE_URL` para conectarse a PostgreSQL.
 - El servicio `db` tiene volumen persistente `db_data` para que los datos sobrevivan reinicios.
