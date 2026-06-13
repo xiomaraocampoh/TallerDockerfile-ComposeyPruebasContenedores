@@ -147,4 +147,3 @@ git remote add upstream https://github.com/<tu-usuario>/<nuevo-repo>.git
 - Las pruebas dentro del contenedor pasan.
 - El nuevo endpoint `POST /recargas` y `GET /recargas` están presentes.
 
-**Listo para entrega del taller Docker Compose.**
