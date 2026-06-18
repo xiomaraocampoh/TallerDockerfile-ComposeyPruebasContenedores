@@ -15,10 +15,12 @@ dependencies = [
     "sqlalchemy>=2.0",
     "psycopg[binary]>=3.2",
     "uvicorn[standard]>=0.34.0",
+    "testcontainers>=4.0",
+    "httpx>=0.27.0",
 ]
 
 [tool.pytest.ini_options]
-pythonpath = ["src"]
+pythonpath = [".", "src"]
 
 [dependency-groups]
 dev = [
